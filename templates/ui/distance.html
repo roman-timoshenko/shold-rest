@@ -1,0 +1,143 @@
+{% extends 'ui/base.html' %}
+{% load i18n %}
+
+{% block title %}Distance Calculation{% endblock %}
+
+{% block additional-head %}
+    <script>
+        function getFilteredVillages($http, query) {
+            return $http.get("{% url 'village-list-filtered' %}", { params: { query: query }})
+                .then(function(response) {
+                    return response.data;
+                });
+        }
+
+        function getDistance(a, b, multiplier) {
+            if ((typeof a === 'undefined') || (typeof b === 'undefined')) {
+                return 0;
+            }
+            var result = Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2)) / multiplier;
+            if (isNaN(result)) {
+                return 0;
+            }
+            return result;
+        }
+
+        function range(n) {
+            return new Array(n);
+        }
+    </script>
+    <script>
+        var distanceMeter = angular.module('DistanceMeter', ['ui.bootstrap']);
+
+        distanceMeter.filter('hhmmss', function() {
+            return function(input) {
+                var sec_num = parseInt(input, 10); // don't forget the second param
+                var hours   = Math.floor(sec_num / 3600);
+                var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+                var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+                if (hours   < 10) {hours   = "0"+hours;}
+                if (minutes < 10) {minutes = "0"+minutes;}
+                if (seconds < 10) {seconds = "0"+seconds;}
+                return hours + ':' + minutes + ':' + seconds;
+            };
+        });
+
+        distanceMeter.controller('DistanceController', function($scope, $http) {
+            $scope.multiplier = 1;
+            $scope.getFilteredVillages = function(query) {
+                return getFilteredVillages($http, query);
+            };
+            $scope.getDistance = function(a, b, multiplier) {
+                return getDistance(a, b, multiplier);
+            };
+            $scope.range = range;
+        });
+
+        distanceMeter.controller('RangeController', function($scope, $q, $http) {
+            $scope.multiplier = 1;
+            $scope.rangeHours = 1;
+            $scope.rangeMinutes = 0;
+            $scope.villagesInRange = [];
+
+            $scope.getFilteredVillages = function(query) {
+                return getFilteredVillages($http, query);
+            };
+            $scope.getDistance = function(a, b, multiplier) {
+                return getDistance(a, b, multiplier);
+            };
+            $scope.range = range;
+
+            $scope.refresh = function() {
+                $scope.getVillagesInRange($scope.rangeMinutes, $scope.rangeHours, $scope.multiplier, $scope.sourceVillage);
+            };
+
+            $scope.getVillagesInRange = function(rangeMinutes, rangeHours, multiplier, sourceVillage) {
+                var range = (rangeMinutes * 60 + rangeHours * 3600) * multiplier;
+                if (!isNaN(range) && typeof sourceVillage === 'object') {
+                    return $http.get("{% url 'village-list-filtered' %}",
+                            { params: { query: sourceVillage.id }})
+                        .success(function(data) {
+                            console.log('assigned ' + data);
+                            $scope.villagesInRange = data;
+                        });
+                }
+            };
+        });
+
+    </script>
+{% endblock %}
+
+{% block content %}
+    <div ng-app="DistanceMeter">
+        <div ng-controller="DistanceController" class="container-fluid form-inline">
+            <h1>Distance Calculation</h1>
+            <p>
+                Between&nbsp;
+                <input type="text" ng-model="sourceVillage"
+                       placeholder="Source village"
+                       typeahead="village as '[' + village.id + ']&nbsp;' + village.name for village in getFilteredVillages($viewValue)"
+                       class="form-control">
+                &nbsp;and&nbsp;
+                <input type="text" ng-model="destinationVillage"
+                       placeholder="Destination village"
+                       typeahead="village as '[' + village.id + ']&nbsp;' + village.name for village in getFilteredVillages($viewValue)"
+                       class="form-control"/>
+                &nbsp;at rate of&nbsp;
+                <select ng-model="multiplier" class="form-control">
+                    <option ng-repeat="n in range(15) track by $index" value="{% templatetag openvariable %}$index+1{% templatetag closevariable %}">X&nbsp;{% templatetag openvariable %}$index+1{% templatetag closevariable %}</option>
+                </select>
+                &nbsp;is&nbsp;<strong><span ng-bind="getDistance(sourceVillage, destinationVillage, multiplier) | hhmmss"></span></strong>
+            </p>
+        </div>
+
+        <div ng-controller="RangeController" class="container-fluid form-inline">
+            <h1>Villages In Range</h1>
+            <p>
+                From&nbsp;
+                <input type="text" ng-model="sourceVillage"
+                       placeholder="Source village"
+                       typeahead="village as '[' + village.id + ']&nbsp;' + village.name for village in getFilteredVillages($viewValue)"
+                       ng-change="refresh()"
+                       class="form-control"/>
+                &nbsp;in&nbsp;
+                <input type="number" ng-change="refresh()" class="form-control" ng-model="rangeHours" style="width: 85px; text-align: right"/>
+                hours and&nbsp;
+                <input type="number" ng-change="refresh()" class="form-control" ng-model="rangeMinutes" style="width: 85px; text-align: right"/>
+                minutes at&nbsp;rate&nbsp;of&nbsp;
+                <select ng-model="multiplier" ng-change="refresh()" class="form-control">
+                    <option ng-repeat="n in range(15) track by $index" value="{% templatetag openvariable %}$index+1{% templatetag closevariable %}">X&nbsp;{% templatetag openvariable %}$index+1{% templatetag closevariable %}</option>
+                </select>
+            </p>
+{% comment %}
+            <div class="row">
+                <ul>
+{#                    <li ng-repeat="village in getVillagesInRange(rangeMinutes, rangeHours, multiplier, sourceVillage)"><span ng-bind="village.name"></span></li>#}
+                    <li ng-repeat="village in villagesInRange"><span ng-bind="village.name"></span></li>
+                </ul>
+            </div>
+{% endcomment %}
+        </div>
+    </div>
+{% endblock %}
