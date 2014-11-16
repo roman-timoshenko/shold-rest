@@ -17,6 +17,5 @@ urlpatterns = patterns('core.views',
    url(r'distance/(?P<a>\d+)/(?P<b>\d+)/$', DistanceView.as_view(), name='get-distance'),
    url(r'villages/init/$', InitVillagesView.as_view(), name='init-villages'),
    url(r'villages/add/$', AddVillageView.as_view(), name='add-village'),
-   url(r'villages/find/radius/(?P<village_id>\d+)/(?P<radius>[0-9]*\.?[0-9]+)/$',
-       FindVillagesInRadius.as_view(), name='find-villages-in-radius'),
+   url(r'villages/find/radius/$', FindVillagesInRadius.as_view(), name='find-villages-in-radius'),
 )

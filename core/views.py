@@ -176,9 +176,11 @@ class FindVillagesInRadius(APIView):
     """
     Finds all villages in radius from a specified village
     """
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
-    def get(self, request, village_id, radius):
+    def get(self, request):
+        village_id = request.REQUEST['village_id']
+        radius = request.REQUEST['radius']
         request_village = get_object_or_404(Village, pk=village_id)
         radius = float(radius)
         result = list()
