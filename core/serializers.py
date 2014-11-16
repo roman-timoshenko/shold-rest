@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from core.models import Village, Region
+from core.models import Village, Region, ArmyRequest
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -19,3 +19,10 @@ class VillageSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Village
         fields = ('id', 'name', 'region', 'x', 'y',)
+
+class ArmyRequestSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    village = VillageSerializer()
+    class Meta:
+        model = ArmyRequest
+        fields = ('user', 'village', 'type')

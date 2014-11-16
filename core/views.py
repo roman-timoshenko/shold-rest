@@ -8,8 +8,8 @@ from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 from django.utils.translation import ugettext_lazy as _
 
-from core.models import Village, Region, calculate_initial_villages
-from core.serializers import VillageSerializer, RegionSerializer, UserSerializer
+from core.models import Village, Region, calculate_initial_villages, ArmyRequest
+from core.serializers import VillageSerializer, RegionSerializer, UserSerializer, ArmyRequestSerializer
 from core.utils import get_distance, get_fourth_point
 
 
@@ -170,6 +170,24 @@ class FindVillagesByNameOrId(APIView):
         query = request.REQUEST['query']
         villages = Village.objects.filter(Q(id__icontains=query) | Q(name__icontains=query))[:10]
         return Response(VillageSerializer(villages, many=True).data)
+
+class FindArmyRequestInRadius(APIView):
+    """
+    Finds army in specified village
+    """
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    def get(self, request):
+        source_village_id = request.REQUEST['source_village_id']
+        radius = float(request.REQUEST['radius'])
+        source_village = get_object_or_404(Village, pk=source_village_id)
+        army_requests = ArmyRequest.objects.all()
+        result = list()
+        for army_request in army_requests:
+            distance = get_distance((army_request.village.x, army_request.village.y), (source_village.x, source_village.y))
+            if distance <= radius:
+                result.append(army_request)
+        return Response(ArmyRequestSerializer(result, many=True).data)
 
 
 class FindVillagesInRadius(APIView):

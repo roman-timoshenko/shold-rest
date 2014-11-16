@@ -39,6 +39,7 @@ ARMY_TYPES_CHOICES = (
     ('capt', _('Captain')),
 )
 
+
 class ArmyRequest(models.Model):
     user = models.ForeignKey(User)
     village = models.ForeignKey(Village)
@@ -47,10 +48,8 @@ class ArmyRequest(models.Model):
     def __unicode__(self):
         return u'%s [%s] - %s' % (self.user.username, self.village.id, self.type)
 
-
-
     class Meta:
-        unique_together = ['user', 'village', 'type']
+        unique_together = ['user', 'village']
 
 
 

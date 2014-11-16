@@ -1,7 +1,7 @@
 from django.conf.urls import url, patterns
 
 from core.views import VillageList, DistanceView, UserList, VillageDetail, UserDetail, ApiRoot, RegionList, RegionDetail, \
-    InitVillagesView, AddVillageView, FindVillagesInRadius, VillageCount, FindVillagesByNameOrId
+    InitVillagesView, AddVillageView, FindVillagesInRadius, VillageCount, FindVillagesByNameOrId, FindArmyRequestInRadius
 
 
 urlpatterns = patterns('core.views',
@@ -17,5 +17,6 @@ urlpatterns = patterns('core.views',
    url(r'distance/(?P<a>\d+)/(?P<b>\d+)/$', DistanceView.as_view(), name='get-distance'),
    url(r'villages/init/$', InitVillagesView.as_view(), name='init-villages'),
    url(r'villages/add/$', AddVillageView.as_view(), name='add-village'),
+   url(r'army/request/find$', FindArmyRequestInRadius.as_view(), name='find-army-request-in-radius'),
    url(r'villages/find/radius/$', FindVillagesInRadius.as_view(), name='find-villages-in-radius'),
 )

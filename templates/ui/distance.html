@@ -76,8 +76,8 @@
             $scope.getVillagesInRange = function(rangeMinutes, rangeHours, multiplier, sourceVillage) {
                 var range = (rangeMinutes * 60 + rangeHours * 3600) * multiplier;
                 if (!isNaN(range) && typeof sourceVillage === 'object') {
-                    return $http.get("{% url 'find-villages-in-radius' %}",
-                            { params: { village_id: sourceVillage.id, radius: range }})
+                    return $http.get("{% url 'find-army-request-in-radius' %}",
+                            { params: { source_village_id: sourceVillage.id, radius: range }})
                         .success(function(data) {
                             console.log('assigned ' + data);
                             $scope.villagesInRange = data;
@@ -132,9 +132,24 @@
                 </select>
             </p>
             <div class="row">
-                <ul>
-                    <li ng-repeat="village in villagesInRange"><span ng-bind="village.name"></span></li>
-                </ul>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>User Name</th>
+                            <th>Village Id</th>
+                            <th>Village Name</th>
+                            <th>Army Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="armyRequest in villagesInRange">
+                            <td><span ng-bind="armyRequest.user.first_name"></span></td>
+                            <td><span ng-bind="armyRequest.village.id"></span></td>
+                            <td><span ng-bind="armyRequest.village.name"></span></td>
+                            <td><span ng-bind="armyRequest.type"></span></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
