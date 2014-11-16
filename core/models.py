@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
@@ -30,6 +31,27 @@ class Village(models.Model):
         verbose_name_plural = _('villages')
         unique_together = (('x', 'y'),)
         index_together = (('x', 'y'),)
+
+
+ARMY_TYPES_CHOICES = (
+    ('full', _('Army full')),
+    ('arch', _('Archers')),
+    ('capt', _('Captain')),
+)
+
+class ArmyRequest(models.Model):
+    user = models.ForeignKey(User)
+    village = models.ForeignKey(Village)
+    type = models.CharField(max_length=4,choices=ARMY_TYPES_CHOICES,default=ARMY_TYPES_CHOICES[0][0])
+
+    def __unicode__(self):
+        return u'%s [%s] - %s' % (self.user.username, self.village.id, self.type)
+
+
+
+    class Meta:
+        unique_together = ['user', 'village', 'type']
+
 
 
 def calculate_initial_villages(village_a_name, village_b_name, village_c_name, village_a_id, village_b_id, village_c_id,
