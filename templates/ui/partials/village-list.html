@@ -1,0 +1,43 @@
+{% load i18n %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-10">
+            <label for="queryInput">{% trans 'query'|capfirst %}</label>
+            <input ng-model="query" class="form-control" id="queryInput"/>
+        </div>
+        <div class="col-xs-2">
+            <label for="pageSizeSelect">{% trans 'page size'|capfirst %}</label>
+            <select id="pageSizeSelect" class="form-control" ng-model="pageSize">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="500">500</option>
+            </select>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-10">
+            <pagination total-items="totalItems" items-per-page="pageSize" max-size="10" ng-model="currentPage" class="pagination-sm" boundary-links="true"></pagination>
+        </div>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>{% trans 'id'|capfirst %}</th>
+                <th>{% trans 'name'|capfirst %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="village in villages">
+                <td style="width: 125px;"><span ng-bind="village.id"></span></td>
+                <td><span ng-bind="village.name"></span></td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>

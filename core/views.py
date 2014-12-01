@@ -39,10 +39,18 @@ class UserDetail(generics.RetrieveUpdateAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
 
-class VillageList(generics.ListCreateAPIView):
-    model = Village
-    serializer_class = VillageSerializer
+class VillageList(APIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    def get(self, request):
+        first = int(request.REQUEST['first'])
+        size = int(request.REQUEST['size'])
+        if 'query' in request.REQUEST:
+            query = request.REQUEST['query']
+            result = Village.objects.all().filter(Q(id__icontains=query) | Q(name__icontains=query)).order_by('id')[first:first + size]
+        else:
+            result = Village.objects.all().order_by('id')[first:size]
+        return Response(VillageSerializer(result, many=True).data)
 
 
 class VillageDetail(generics.RetrieveUpdateAPIView):
@@ -77,7 +85,12 @@ class VillageCount(generics.SingleObjectAPIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
     def get(self, request):
-        return Response({'count': Village.objects.all().count()})
+        if 'query' in request.REQUEST:
+            query = request.REQUEST['query']
+            result = Village.objects.all().filter(Q(id__icontains=query) | Q(name__icontains=query)).count()
+        else:
+            result = Village.objects.all().count();
+        return Response({'count': result})
 
 
 # {
@@ -198,12 +211,14 @@ class FindVillagesInRadius(APIView):
 
     def get(self, request):
         village_id = request.REQUEST['village_id']
-        radius = request.REQUEST['radius']
+        min = request.REQUEST['range_min']
+        max = request.REQUEST['range_max']
         request_village = get_object_or_404(Village, pk=village_id)
-        radius = float(radius)
+        min = float(min)
+        max = float(max)
         result = list()
         for village in Village.objects.all():
             distance = get_distance((request_village.x, request_village.y), (village.x, village.y))
-            if distance < radius:
+            if min <= distance <= max:
                 result.append(village)
         return Response(VillageSerializer(result, many=True).data)

@@ -1,0 +1,52 @@
+{% load i18n %}
+
+<div class="container-fluid" novalidation>
+    <form name="form" class="form-inline">
+        <div class="form-group input-group">
+            <span class="input-group-addon">{% trans 'source'|capfirst %}:</span>
+            <input type="text" ng-required="true" ng-model="source" class="form-control"
+                ng-model-options="{ debounce: 700 }"
+                placeholder="{% trans 'source village'|capfirst %}"
+                typeahead="village as '[' + village.id + ']&nbsp;' + village.name for village in getFilteredVillages($viewValue)" />
+        </div>
+        <div class="form-group input-group">
+            <span class="input-group-addon">{% trans 'minimum'|capfirst %}:</span>
+            <input type="text" ng-required="true" ng-model="min" class="form-control"
+                ng-model-options="{ debounce: 700 }"
+                ng-pattern="/^(((([0-9]+)\:)?[0-9]+\:)?[0-9]+\:)?[0-9]+$/"
+                placeholder="{% trans 'minimum distance'|capfirst %}" />
+        </div>
+        <div class="form-group input-group">
+            <span class="input-group-addon">{% trans 'maximum'|capfirst %}:</span>
+            <input type="text" ng-required="true" ng-model="max" class="form-control"
+                ng-model-options="{ debounce: 700 }"
+                ng-pattern="/^(((([0-9]+)\:)?[0-9]+\:)?[0-9]+\:)?[0-9]+$/"
+                placeholder="{% trans 'maximum distance'|capfirst %}" />
+        </div>
+        <div class="form-group input-group">
+            <span class="input-group-addon">{% trans 'speed'|capfirst %}:</span>
+            <select ng-model="multiplier" class="form-control">
+                <option ng-repeat="n in range(15) track by $index" value="{% templatetag openvariable %}$index+1{% templatetag closevariable %}">X&nbsp;{% templatetag openvariable %}$index+1{% templatetag closevariable %}</option>
+            </select>
+        </div>
+        <span ng-show="form.$invalid">invalid</span>
+    </form>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th class="col-md-1">{% trans 'id'|capfirst %}</th>
+                    <th class="col-md-2">{% trans 'name'|capfirst %}</th>
+                    <th class="col-md-2">{% trans 'distance'|capfirst %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="village in villages">
+                    <td class="col-md-1"><span ng-bind="village.id"></span></td>
+                    <td class="col-md-2"><span ng-bind="village.name"></span></td>
+                    <td class="col-md-2"><span ng-bind="getDistance(source, village, multiplier)|hhmmss"></span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
